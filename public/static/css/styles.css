@@ -761,6 +761,16 @@ table.assignments td.arrow {
   text-align: center;
 }
 
+/* ---------- danger zone ---------- */
+.danger-zone {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.danger-zone .btn.danger {
+  width: auto;
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 720px) {
   .cards-grid,

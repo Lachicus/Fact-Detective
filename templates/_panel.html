@@ -78,9 +78,6 @@
           <input type="hidden" name="action" value="new_round" />
           <button type="submit" class="btn primary">Play Again (same players)</button>
         </form>
-        <form method="post" action="/rooms/{{ room_code }}/end">
-          <button type="submit" class="btn danger">End Session</button>
-        </form>
       {% endif %}
     </div>
   </section>
@@ -144,6 +141,18 @@
       </div>
     </section>
   {% endif %}
+
+  <section class="card wide danger-zone">
+    <h3>End the game</h3>
+    <p class="muted">
+      Close this room for everyone, at any point. Players will see a “session ended”
+      screen and you'll return to the home page.
+    </p>
+    <form method="post" action="/rooms/{{ room_code }}/end"
+          onsubmit="return confirm('Close the room for everyone?');">
+      <button type="submit" class="btn danger">End Session</button>
+    </form>
+  </section>
 </div>
 
 {% else %}
