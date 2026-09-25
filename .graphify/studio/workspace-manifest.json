@@ -1,0 +1,61 @@
+{
+  "schema": "engram_workspace_manifest_v1",
+  "schema_version": 1,
+  "contract": "workspace-bundle-contract-v1",
+  "generated_at": "2026-09-25T01:25:14.944Z",
+  "graph_hash": null,
+  "present_count": 4,
+  "counts": {
+    "graph_nodes": 240,
+    "scene_nodes": 240,
+    "entities": 240,
+    "coherent": true
+  },
+  "artifacts": [
+    {
+      "name": "entities",
+      "path": "entities.json",
+      "schema": null,
+      "present": true,
+      "sha256": "1850339aa72907d265ade90be9b3f78cac92508dae42d61669472f8773a6c93e",
+      "size_bytes": 41740,
+      "role": "entities"
+    },
+    {
+      "name": "graph",
+      "path": "graph.json",
+      "schema": null,
+      "present": true,
+      "sha256": "5f8127a1906441c07080c249a3f94dc934bb576cd508975e82237ff2602c6782",
+      "size_bytes": 295270,
+      "role": "graph"
+    },
+    {
+      "name": "reconciliation-candidates",
+      "path": "reconciliation-candidates.json",
+      "schema": "engram_ontology_reconciliation_candidates_v1",
+      "present": true,
+      "sha256": "4bf7c8639bc34bbbae5aef4aba3c724f9a425cbdc0416ab6384f7745ae1acb96",
+      "size_bytes": 22,
+      "role": "reconciliation"
+    },
+    {
+      "name": "scene",
+      "path": "scene.json",
+      "schema": null,
+      "present": true,
+      "sha256": "1afd1f8285363628d0850d8cbb6297e72397623c2ec54ba7640ce56b14a34a00",
+      "size_bytes": 154410,
+      "role": "scene"
+    },
+    {
+      "name": "scene-hierarchies",
+      "path": "scene-hierarchies.json",
+      "schema": "engram_scene_hierarchies_v1",
+      "present": false,
+      "sha256": null,
+      "size_bytes": null,
+      "role": "hierarchy"
+    }
+  ]
+}

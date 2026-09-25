@@ -1,0 +1,294 @@
+{% if ended %}
+{# ----------------------------------------------------------------- #}
+{# SESSION CLOSED BY HOST                                            #}
+{# ----------------------------------------------------------------- #}
+<section class="card center">
+  <h1>Session ended</h1>
+  <p class="muted">The host has closed this room. Thanks for playing Private Fact Detective!</p>
+</section>
+
+{% elif role == "host" %}
+{# ----------------------------------------------------------------- #}
+{# HOST DASHBOARD                                                    #}
+{# ----------------------------------------------------------------- #}
+<div class="host-grid">
+  <section class="card">
+    <h2>Host Dashboard</h2>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-value">{{ host_players | length }}</span><span class="stat-label">Players</span></div>
+      <div class="stat"><span class="stat-value">{{ facts_submitted }} / {{ facts_total }}</span><span class="stat-label">Facts</span></div>
+      <div class="stat"><span class="stat-value">{{ guesses_submitted }} / {{ facts_total }}</span><span class="stat-label">Guesses</span></div>
+      <div class="stat"><span class="stat-value">{{ revealed_players | length }} / {{ facts_total }}</span><span class="stat-label">Revealed</span></div>
+    </div>
+
+    {% if investigation and phase == "INVESTIGATION" %}
+      <span class="timer small" id="countdown"
+            data-ends-at="{{ investigation.ends_at }}"
+            data-server-now="{{ investigation.server_now }}">--:--</span>
+    {% endif %}
+
+    <div class="controls">
+      {% if phase == "LOBBY" %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="start_fact_collection" />
+          <button type="submit" class="btn primary">Start Fact Collection</button>
+        </form>
+
+      {% elif phase in ["FACT_COLLECTION", "READY"] %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="reset_facts" />
+          <button type="submit" class="btn ghost">Reset Facts</button>
+        </form>
+        {% if phase == "READY" %}
+          <form method="post" action="/rooms/{{ room_code }}/start" class="minutes-control">
+            <label for="minutes">Investigation minutes</label>
+            <input id="minutes" type="number" name="investigation_minutes" min="3" max="30" value="{{ investigation_minutes }}" class="minutes-input" />
+            <button type="submit" class="btn primary">Start Investigation</button>
+          </form>
+        {% endif %}
+
+      {% elif phase == "INVESTIGATION" %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="end_investigation" />
+          <button type="submit" class="btn primary">End Investigation</button>
+        </form>
+
+      {% elif phase == "GUESSING" %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="reveal_all" />
+          <button type="submit" class="btn primary">Reveal All Results</button>
+        </form>
+
+      {% elif phase == "REVEAL" %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="reveal_all" />
+          <button type="submit" class="btn primary">Reveal All</button>
+        </form>
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="finish" />
+          <button type="submit" class="btn ghost">Finish Game</button>
+        </form>
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="new_round" />
+          <button type="submit" class="btn">Play Again (same players)</button>
+        </form>
+
+      {% elif phase == "FINISHED" %}
+        <form method="post" action="/rooms/{{ room_code }}/host/action">
+          <input type="hidden" name="action" value="new_round" />
+          <button type="submit" class="btn primary">Play Again (same players)</button>
+        </form>
+        <form method="post" action="/rooms/{{ room_code }}/end">
+          <button type="submit" class="btn danger">End Session</button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Players</h3>
+    {% if host_players | length == 0 %}
+      <p class="muted">No players yet. Share room code {{ room_code }}.</p>
+    {% else %}
+      <ul class="player-list">
+        {% for p in host_players %}
+          <li class="player-chip">
+            <span class="dot"></span>
+            <span class="player-name">{{ p.name }}</span>
+            <span class="player-meta">{{ "✓ fact" if p.submitted else "…" }} · {{ "✓ guess" if p.guessed else "…" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+
+  {% if phase in ["INVESTIGATION", "GUESSING", "REVEAL", "FINISHED"] and assignments and assignments | length %}
+    <section class="card wide">
+      <h3>Assignments (host only)</h3>
+      <table class="assignments">
+        <thead>
+          <tr><th>Detective</th><th></th><th>Fact owner</th><th>Fact</th></tr>
+        </thead>
+        <tbody>
+          {% for a in assignments %}
+            <tr>
+              <td>{{ a.giver_name }}</td>
+              <td class="arrow">→</td>
+              <td>{{ a.owner_name }}</td>
+              <td class="fact-cell">{{ a.fact or "" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+
+  {% if phase in ["REVEAL", "FINISHED"] %}
+    <section class="card wide">
+      <h3>Reveal results</h3>
+      <p class="muted">Reveal one at a time, or all at once.</p>
+      <div class="reveal-controls">
+        {% for p in host_players %}
+          <div class="reveal-control-row">
+            <span>{{ p.name }}</span>
+            {% if p.id in revealed_players %}
+              <span class="tag done">revealed</span>
+            {% else %}
+              <form method="post" action="/rooms/{{ room_code }}/reveal">
+                <input type="hidden" name="target_id" value="{{ p.id }}" />
+                <button type="submit" class="btn small">Reveal</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+
+{% else %}
+{# ----------------------------------------------------------------- #}
+{# PARTICIPANT VIEWS                                                 #}
+{# ----------------------------------------------------------------- #}
+{% if phase == "LOBBY" %}
+  <section class="card center">
+    <h2>You're in!</h2>
+    <p class="muted">Waiting for the host to start fact collection…</p>
+    <div class="players-block">
+      <h3>Players ({{ players | length }})</h3>
+      <ul class="player-list">
+        {% for p in players %}
+          <li class="player-chip"><span class="dot"></span><span class="player-name">{{ p.name }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <p class="footnote">Share the room code {{ room_code }} with your team.</p>
+  </section>
+
+{% elif phase == "FACT_COLLECTION" %}
+  {% if you.submitted %}
+    <section class="card center">
+      <div class="success-mark">✓</div>
+      <h2>Fact submitted</h2>
+      <p class="muted">Waiting for everyone else…</p>
+      <p class="progress">{{ facts_submitted }} / {{ facts_total }} submitted</p>
+    </section>
+  {% else %}
+    <section class="card">
+      <h2>YOUR SECRET FACT</h2>
+      <p class="muted">Submit one interesting personal fact that others could discover through conversation.</p>
+      <div class="chips">
+        {% for c in ["Childhood", "Travel", "Unexpected hobbies", "Funny accidents", "Unusual skills", "Strange experiences", "Accomplishments", "Random experiences", "Interesting firsts", "Things people don't know"] %}
+          <span class="chip">{{ c }}</span>
+        {% endfor %}
+      </div>
+      <form method="post" action="/rooms/{{ room_code }}/facts">
+        <textarea class="fact-input" name="fact" maxlength="500" rows="4" placeholder="I once…" required></textarea>
+        <p class="footnote">Please avoid highly sensitive information. You can't change it after submitting.</p>
+        <button type="submit" class="btn primary">Submit Fact</button>
+      </form>
+    </section>
+  {% endif %}
+
+{% elif phase == "READY" %}
+  <section class="card center">
+    <h2>Everyone's ready 🎉</h2>
+    <p class="muted">The host will start the investigation shortly.</p>
+    <p class="progress">{{ facts_submitted }} / {{ facts_total }} facts submitted</p>
+  </section>
+
+{% elif phase in ["ASSIGNMENT", "INVESTIGATION"] %}
+  <section class="card investigation">
+    <p class="eyebrow">YOUR SECRET FACT</p>
+    <blockquote class="secret-fact">"{{ assignment.fact if assignment else "" }}"</blockquote>
+    {% if investigation %}
+      <span class="timer" id="countdown"
+            data-ends-at="{{ investigation.ends_at }}"
+            data-server-now="{{ investigation.server_now }}">--:--</span>
+    {% else %}
+      <span class="timer" id="countdown">--:--</span>
+    {% endif %}
+    <h3>Who does this belong to?</h3>
+    <p class="muted">Talk to everyone and figure out who this fact belongs to.</p>
+    <div class="rules">
+      <h4>How to investigate</h4>
+      <ul>
+        <li>Ask natural, open questions.</li>
+        <li>Don't directly ask “is this your fact?”</li>
+        <li>Listen for the story behind the fact.</li>
+      </ul>
+    </div>
+  </section>
+
+{% elif phase == "GUESSING" %}
+  {% if you.guessed %}
+    <section class="card center">
+      <div class="success-mark">✓</div>
+      <h2>Guess submitted</h2>
+      <p class="muted">Waiting for everyone else…</p>
+      <p class="progress">{{ guesses_submitted }} / {{ facts_total }} guessed</p>
+    </section>
+  {% else %}
+    <section class="card">
+      <p class="eyebrow">TIME'S UP</p>
+      <h2>Who owns this fact?</h2>
+      {% if assignment %}<blockquote class="secret-fact small">"{{ assignment.fact }}"</blockquote>{% endif %}
+      <form method="post" action="/rooms/{{ room_code }}/guess">
+        <div class="radio-list">
+          {% for p in players if p.id != you.id %}
+            <label class="radio-row">
+              <input type="radio" name="target_id" value="{{ p.id }}" required />
+              <span>{{ p.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn primary">Submit Guess</button>
+      </form>
+    </section>
+  {% endif %}
+
+{% elif phase == "REVEAL" %}
+  {% if reveal %}
+    <section class="card reveal">
+      <p class="eyebrow">THE REVEAL</p>
+      <blockquote class="secret-fact small">"{{ reveal.fact }}"</blockquote>
+      <div class="reveal-grid">
+        <div class="reveal-item"><span class="reveal-label">Fact owner</span><span class="reveal-value">{{ reveal.owner_name }}</span></div>
+        <div class="reveal-item"><span class="reveal-label">Your guess</span><span class="reveal-value">{{ reveal.your_guess_name or "—" }}</span></div>
+      </div>
+      <div class="verdict {{ 'correct' if reveal.correct else 'incorrect' }}">
+        <span>{{ "✓ Correct!" if reveal.correct else "✗ Incorrect" }}</span>
+      </div>
+      <p class="muted">Now let {{ reveal.owner_name or "the owner" }} tell the story behind this fact.</p>
+    </section>
+  {% else %}
+    <section class="card center">
+      <h2>The reveal is coming…</h2>
+      <p class="muted">Waiting for the host to reveal results.</p>
+      <p class="progress">{{ revealed_count }} / {{ facts_total }} revealed</p>
+    </section>
+  {% endif %}
+
+{% elif phase == "FINISHED" %}
+  <section class="card center">
+    <h1>Case closed 🔍</h1>
+    <p class="muted">Thanks for playing Private Fact Detective!</p>
+  </section>
+  {% if reveal %}
+    <section class="card reveal">
+      <p class="eyebrow">THE REVEAL</p>
+      <blockquote class="secret-fact small">"{{ reveal.fact }}"</blockquote>
+      <div class="reveal-grid">
+        <div class="reveal-item"><span class="reveal-label">Fact owner</span><span class="reveal-value">{{ reveal.owner_name }}</span></div>
+        <div class="reveal-item"><span class="reveal-label">Your guess</span><span class="reveal-value">{{ reveal.your_guess_name or "—" }}</span></div>
+      </div>
+      <div class="verdict {{ 'correct' if reveal.correct else 'incorrect' }}">
+        <span>{{ "✓ Correct!" if reveal.correct else "✗ Incorrect" }}</span>
+      </div>
+    </section>
+  {% endif %}
+
+{% else %}
+  <section class="card center"><p>Loading…</p></section>
+{% endif %}
+{% endif %}

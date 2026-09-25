@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        "_rev": {
+          ".read": true,
+          ".write": false
+        },
+        "data": {
+          ".read": false,
+          ".write": false
+        }
+      }
+    }
+  }
+}

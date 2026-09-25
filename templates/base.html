@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f6fb" />
+    <title>Private Fact Detective</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    {% if pfd_json %}
+    <script>window.PFD = {{ pfd_json | safe }};</script>
+    {% else %}
+    <script>window.PFD = null;</script>
+    {% endif %}
+  </head>
+  <body>
+    {% block content %}{% endblock %}
+    <script src="/static/js/realtime.js"></script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+{
+  "backend/app/__init__.py": {
+    "mtime": 1790258981214.7446,
+    "hash": "5ce33c188a26b8c49c33b7e77d6f0051"
+  },
+  "backend/app/game.py": {
+    "mtime": 1790258937987.0813,
+    "hash": "5f0adf75ca143c3e4a99cd90dfde4408"
+  },
+  "backend/app/main.py": {
+    "mtime": 1790259139355.2712,
+    "hash": "eae6740a31066aa7a16a86c22d1c65e3"
+  },
+  "backend/app/models.py": {
+    "mtime": 1790258960880.508,
+    "hash": "8ecef6f82b76a15917c3e964c3816f56"
+  },
+  "backend/app/rooms.py": {
+    "mtime": 1790258948166.1404,
+    "hash": "19204a2632c889db290ed4aca415d2b6"
+  },
+  "backend/app/schemas.py": {
+    "mtime": 1790258977906.074,
+    "hash": "3208a21ecffc6d0350b54670b12a8851"
+  },
+  "backend/app/security.py": {
+    "mtime": 1790258927449.622,
+    "hash": "4b0166dfef16ed0b93e49173ff83b3db"
+  },
+  "backend/app/websocket.py": {
+    "mtime": 1790258942765.466,
+    "hash": "96a6a04aed66e217be581406099d51ce"
+  },
+  "backend/tests/__init__.py": {
+    "mtime": 1790259048888.4639,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "backend/tests/conftest.py": {
+    "mtime": 1790259028241.7134,
+    "hash": "7390c5a72f055a8e71cc4fb84db4341b"
+  },
+  "backend/tests/test_assignment.py": {
+    "mtime": 1790259031798.0906,
+    "hash": "6d993a29bae6b4f848f7d95ee0ebfd3e"
+  },
+  "backend/tests/test_e2e_simulation.py": {
+    "mtime": 1790259157296.058,
+    "hash": "50c70b407a30c18ad10f8cbaf81cfc15"
+  },
+  "backend/tests/test_game_state.py": {
+    "mtime": 1790259041436.8503,
+    "hash": "b9b6124857f14aef96442682cdfb1abe"
+  },
+  "backend/tests/test_guesses.py": {
+    "mtime": 1790259047091.125,
+    "hash": "2e1388bb483a9485cd5dd253516f8d5c"
+  },
+  "backend/tests/test_privacy.py": {
+    "mtime": 1790259036749.0842,
+    "hash": "b36d4bfca94cb39d95feb2bd9da67f77"
+  },
+  "frontend/js/api.js": {
+    "mtime": 1790259078664.5676,
+    "hash": "8db531a084d0183cadae137df6ee31ab"
+  },
+  "frontend/js/app.js": {
+    "mtime": 1790259112392.822,
+    "hash": "a182e5515c9cb67cbd3fac13f48862ab"
+  },
+  "frontend/js/config.js": {
+    "mtime": 1790259072296.1064,
+    "hash": "73eeb1991e82e6537c4f2cb6b8df2144"
+  },
+  "frontend/js/state.js": {
+    "mtime": 1790259075206.8782,
+    "hash": "1dfc7fe18cbd0562e15ac46cdb9971af"
+  },
+  "frontend/js/ui.js": {
+    "mtime": 1790259106170.013,
+    "hash": "40d1749a35fbc25459f434c707cdb1dc"
+  },
+  "frontend/js/websocket.js": {
+    "mtime": 1790259082161.2578,
+    "hash": "2e287604fa30295e584a8a5df27ef3ad"
+  },
+  "README.md": {
+    "mtime": 1790262026563.6199,
+    "hash": "2c15363edfe1509dbedf3470876f5dae"
+  },
+  "backend/requirements-dev.txt": {
+    "mtime": 1790258925052.0134,
+    "hash": "d748ac57d8d305af543ae23f9b7740d5"
+  },
+  "backend/requirements.txt": {
+    "mtime": 1790258924808.1301,
+    "hash": "c18d6e146b54ee03e21d021969656883"
+  },
+  "frontend/index.html": {
+    "mtime": 1790259114456.9622,
+    "hash": "1573133b41dc1b795944e92b43305473"
+  }
+}

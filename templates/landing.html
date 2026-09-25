@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="screen screen-landing" id="room-root">
+  <section class="hero">
+    <h1>PRIVATE FACT DETECTIVE</h1>
+    <p class="tagline">A team bonding game where conversation is the clue.</p>
+  </section>
+
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+  <div class="cards-grid">
+    <section class="card">
+      <h2>Create a room</h2>
+      <p class="muted">You'll be the host and run the game.</p>
+      <form method="post" action="/rooms">
+        <button type="submit" class="btn primary">Create Room</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Join a room</h2>
+      <form method="post" action="/join">
+        <div class="field">
+          <label for="join-code">Room code</label>
+          <input
+            id="join-code"
+            type="text"
+            name="room_code"
+            value="{{ prefill_room }}"
+            maxlength="5"
+            class="uppercase"
+            autocomplete="off"
+            {% if prefill_room %}readonly{% endif %}
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="join-name">Display name</label>
+          <input id="join-name" type="text" name="name" maxlength="40" required />
+        </div>
+        <button type="submit" class="btn">Join Room</button>
+      </form>
+    </section>
+  </div>
+
+  <p class="footnote">No accounts. Just one team meeting.</p>
+</main>
+{% endblock %}

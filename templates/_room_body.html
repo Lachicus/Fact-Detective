@@ -1,0 +1,18 @@
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">🔍</span>
+    <span class="brand-name">Private Fact Detective</span>
+  </div>
+  <div class="topbar-right">
+    <span class="room-pill">ROOM {{ room_code }}</span>
+    <span class="badge badge-{{ phase }}">{{ phase_label }}</span>
+    <span class="conn conn-connected" data-conn>Live</span>
+  </div>
+</header>
+
+<main id="screen" class="screen">
+  {% if error %}<p class="error banner">{{ error }}</p>{% endif %}
+  <div id="phase-panel">
+    {% include "_panel.html" %}
+  </div>
+</main>

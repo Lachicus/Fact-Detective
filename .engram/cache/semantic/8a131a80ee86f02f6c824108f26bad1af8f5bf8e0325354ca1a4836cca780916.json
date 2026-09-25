@@ -1,0 +1,1 @@
+{"nodes":[{"id":"requirements_dev_file","label":"requirements-dev.txt","file_type":"document","source_file":"backend/requirements-dev.txt","source_location":"line 1","source_url":null,"captured_at":null,"author":null,"contributor":null,"rationale":"Development dependencies; includes -r requirements.txt to inherit runtime dependencies."}],"edges":[],"hyperedges":[]}

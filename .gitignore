@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Firebase service-account keys (never commit)
+*firebase-adminsdk*.json
+*-adminsdk-*.json
+serviceAccountKey.json
+credentials.json
+.secrets/
+
+# Node / frontend tooling
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
