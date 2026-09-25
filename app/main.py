@@ -38,9 +38,18 @@ from .models import Player, Room
 from .security import normalize_room_code
 from .store import get_store
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+def _find_base_dir() -> Path:
+    """Locate the project root (the directory that contains templates/)."""
+    here = Path(__file__).resolve()
+    for candidate in [here.parent, *here.parents]:
+        if (candidate / "templates").is_dir():
+            return candidate
+    return here.parent
+
+
+BASE_DIR = _find_base_dir()
 TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "public" / "static"
+STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(title="Private Fact Detective", version="2.0.0")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
