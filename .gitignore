@@ -23,6 +23,12 @@ credentials.json
 # Node / frontend tooling
 node_modules/
 
+# Graphify / Engram knowledge graph (local artifacts; rebuild with /graphify)
+.graphify/
+.engram/
+.graphify
+.engram
+
 # OS / editor
 .DS_Store
 Thumbs.db

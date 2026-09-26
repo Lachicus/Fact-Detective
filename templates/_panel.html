@@ -93,9 +93,22 @@
             <span class="dot"></span>
             <span class="player-name">{{ p.name }}</span>
             <span class="player-meta">{{ "✓ fact" if p.submitted else "…" }} · {{ "✓ guess" if p.guessed else "…" }}</span>
+            {% if can_remove_players %}
+              <form class="kick-form" method="post" action="/rooms/{{ room_code }}/host/kick"
+                    onsubmit="return confirm('Remove {{ p.name }} from the room?');">
+                <input type="hidden" name="target_id" value="{{ p.id }}" />
+                <button type="submit" class="btn small ghost" title="Remove {{ p.name }} from the room">Remove</button>
+              </form>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
+      {% if can_remove_players %}
+        <form class="restart-form" method="post" action="/rooms/{{ room_code }}/host/restart"
+              onsubmit="return confirm('Restart the session? Every player will be removed and has to re-join.');">
+          <button type="submit" class="btn ghost">Restart session (remove all players)</button>
+        </form>
+      {% endif %}
     {% endif %}
   </section>
 
@@ -118,6 +131,11 @@
         </tbody>
       </table>
     </section>
+  {% endif %}
+
+  {% if results %}
+    {% set viewer_id = none %}
+    {% include "_results.html" %}
   {% endif %}
 
   {% if phase in ["REVEAL", "FINISHED"] %}
@@ -268,6 +286,9 @@
       <div class="verdict {{ 'correct' if reveal.correct else 'incorrect' }}">
         <span>{{ "✓ Correct!" if reveal.correct else "✗ Incorrect" }}</span>
       </div>
+      {% if results %}
+        <p class="progress">You finished #{{ your_rank }} with {{ your_points }} {{ "point" if your_points == 1 else "points" }}.</p>
+      {% endif %}
       <p class="muted">Now let {{ reveal.owner_name or "the owner" }} tell the story behind this fact.</p>
     </section>
   {% else %}
@@ -277,10 +298,17 @@
       <p class="progress">{{ revealed_count }} / {{ facts_total }} revealed</p>
     </section>
   {% endif %}
+  {% if results %}
+    {% set viewer_id = you.id %}
+    {% include "_results.html" %}
+  {% endif %}
 
 {% elif phase == "FINISHED" %}
   <section class="card center">
     <h1>Case closed 🔍</h1>
+    {% if results %}
+      <p class="progress">You finished #{{ your_rank }} with {{ your_points }} {{ "point" if your_points == 1 else "points" }}.</p>
+    {% endif %}
     <p class="muted">Thanks for playing Private Fact Detective!</p>
   </section>
   {% if reveal %}
@@ -295,6 +323,10 @@
         <span>{{ "✓ Correct!" if reveal.correct else "✗ Incorrect" }}</span>
       </div>
     </section>
+  {% endif %}
+  {% if results %}
+    {% set viewer_id = you.id %}
+    {% include "_results.html" %}
   {% endif %}
 
 {% else %}

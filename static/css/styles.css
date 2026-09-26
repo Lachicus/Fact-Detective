@@ -446,6 +446,19 @@ textarea:focus {
   white-space: nowrap;
 }
 
+.player-chip .kick-form {
+  margin-left: 8px;
+  flex: none;
+}
+
+.player-chip .kick-form .btn {
+  padding: 4px 10px;
+}
+
+.restart-form {
+  margin-top: 14px;
+}
+
 .players-block {
   width: 100%;
   margin: 18px 0;
@@ -717,6 +730,41 @@ table.assignments td.arrow {
   color: var(--muted);
   font-style: italic;
   max-width: 360px;
+}
+
+/* ---------- results & scoring ---------- */
+table.results-table td.rank-cell {
+  width: 24px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+table.results-table th.score-col,
+table.results-table td.score-cell {
+  text-align: right;
+  width: 64px;
+}
+
+table.results-table td.score-cell {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+table.results-table td.verdict-cell {
+  width: 24px;
+  font-weight: 700;
+}
+
+table.results-table td.verdict-cell.correct {
+  color: #047857;
+}
+
+table.results-table td.verdict-cell.incorrect {
+  color: var(--danger);
+}
+
+table.results-table tr.row-correct {
+  background: rgba(209, 250, 229, 0.4);
 }
 
 .reveal-controls {

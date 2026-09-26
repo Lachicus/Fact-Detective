@@ -29,6 +29,7 @@ from .game import (
     GameError,
     Phase,
     assert_transition,
+    can_remove_players,
     clamp_investigation_minutes,
     sanitize_fact,
     sanitize_name,
@@ -448,6 +449,9 @@ def _apply_host_action(room: Room, action: str) -> None:
         room.revealed_players = list(room.players.keys())
 
     elif action == "finish":
+        # Finishing always completes the reveal, otherwise players who were
+        # never individually revealed could never see the results board.
+        room.reveal_everyone()
         room.state = Phase.FINISHED
 
     elif action == "start_investigation":
@@ -455,6 +459,56 @@ def _apply_host_action(room: Room, action: str) -> None:
 
     else:
         raise GameError(f"Unknown host action: {action!r}.")
+
+
+@app.post("/rooms/{room_code}/host/kick")
+def kick_player(request: Request, room_code: str, target_id: str = Form("")):
+    """Host-only: remove a participant from the room."""
+    code = normalize_room_code(room_code)
+    store = get_store()
+    room = store.get(code)
+    if room is None:
+        return _render_landing(request, error="That room was not found.", status_code=404)
+    _code, token = _read_session(request)
+    try:
+        _require_host(room, token)
+        _remove_player(room, target_id)
+        store.save(room)
+    except GameError as exc:
+        role, p = _resolve_role(room, token)
+        if role:
+            return _render_room(request, room, role, p, error=exc.message, status_code=exc.status_code)
+        return _render_landing(request, error=exc.message, prefill_room=code, status_code=exc.status_code)
+
+    return RedirectResponse(url=f"/rooms/{code}", status_code=303)
+
+
+def _remove_player(room: Room, target_id: Optional[str]) -> None:
+    if not can_remove_players(room.state):
+        raise GameError("Players can only be removed before the investigation starts.")
+    room.remove_player((target_id or "").strip())
+
+
+@app.post("/rooms/{room_code}/host/restart")
+def restart_session(request: Request, room_code: str):
+    """Host-only: empty the room back to a fresh lobby, keeping host control."""
+    code = normalize_room_code(room_code)
+    store = get_store()
+    room = store.get(code)
+    if room is None:
+        return _render_landing(request, error="That room was not found.", status_code=404)
+    _code, token = _read_session(request)
+    try:
+        _require_host(room, token)
+        room.restart_session()
+        store.save(room)
+    except GameError as exc:
+        role, p = _resolve_role(room, token)
+        if role:
+            return _render_room(request, room, role, p, error=exc.message, status_code=exc.status_code)
+        return _render_landing(request, error=exc.message, prefill_room=code, status_code=exc.status_code)
+
+    return RedirectResponse(url=f"/rooms/{code}", status_code=303)
 
 
 @app.post("/rooms/{room_code}/reveal")

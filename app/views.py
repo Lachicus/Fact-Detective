@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from typing import Optional
 
-from .game import Phase
+from .game import Phase, can_remove_players, is_correct_guess, points_for, rank_scores
 from .models import Player, Room
 
 PHASE_LABELS = {
@@ -88,9 +88,57 @@ def _base(room: Room, role: str) -> dict:
     }
 
 
+def results_visible(room: Room) -> bool:
+    """Whether the full answer key may be shown to participants.
+
+    The board contains every player's fact and its owner, so it stays hidden
+    while the host is still revealing one player at a time.
+    """
+    if room.state == Phase.FINISHED:
+        return True
+    return room.state == Phase.REVEAL and room.all_revealed()
+
+
+def results_board(room: Room) -> list:
+    """Per-player verdict and score, sorted best first.
+
+    Contains the whole answer key, so callers must gate it on
+    :func:`results_visible` (participants) or on the host role.
+    """
+    rows = []
+    points = {}
+    for player in room.players.values():
+        owner_id = room.assignments.get(player.id)
+        owner = room.players.get(owner_id) if owner_id else None
+        guessed = room.players.get(player.guess) if player.guess else None
+        correct = is_correct_guess(player.guess, owner_id)
+        points[player.id] = points_for(correct)
+        rows.append(
+            {
+                "player_id": player.id,
+                "player_name": player.name,
+                "fact": owner.fact if owner else None,
+                "owner_id": owner_id,
+                "owner_name": owner.name if owner else None,
+                "guess_id": player.guess,
+                "guess_name": guessed.name if guessed else None,
+                "correct": correct,
+                "points": points[player.id],
+            }
+        )
+
+    ranks = rank_scores(points)
+    for row in rows:
+        row["rank"] = ranks[row["player_id"]]
+    rows.sort(key=lambda row: (row["rank"], row["player_name"].lower()))
+    return rows
+
+
 def participant_context(room: Room, player: Player) -> dict:
     """Authorized context for a single participant."""
     ctx = _base(room, "participant")
+    board = results_board(room) if results_visible(room) else None
+    your_row = next((row for row in board or [] if row["player_id"] == player.id), None)
     ctx.update(
         {
             "you": {
@@ -102,6 +150,9 @@ def participant_context(room: Room, player: Player) -> dict:
             "assignment": assignment_for(room, player),
             "reveal": reveal_for(room, player),
             "revealed_count": len(room.revealed_players),
+            "results": board,
+            "your_points": your_row["points"] if your_row else 0,
+            "your_rank": your_row["rank"] if your_row else None,
         }
     )
     return ctx
@@ -130,6 +181,10 @@ def host_context(room: Room) -> dict:
             "investigation_minutes": room.investigation_minutes,
             "assignments": assignments_view,
             "revealed_players": sorted(room.revealed_players),
+            "results": results_board(room)
+            if room.state in (Phase.REVEAL, Phase.FINISHED)
+            else None,
+            "can_remove_players": can_remove_players(room.state),
         }
     )
     return ctx
@@ -147,6 +202,8 @@ __all__ = [
     "investigation_payload",
     "assignment_for",
     "reveal_for",
+    "results_visible",
+    "results_board",
     "participant_context",
     "host_context",
     "context_for",

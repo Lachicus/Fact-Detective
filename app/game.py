@@ -40,6 +40,13 @@ INVESTIGATION_DEFAULT_MINUTES = 10
 MIN_PLAYERS = 2
 MAX_PLAYERS = 30
 
+POINTS_PER_CORRECT_GUESS = 1
+
+# The host may only remove players while the round has not been assigned yet.
+# Afterwards every player owns an assignment, so removing one would invalidate
+# the derangement for everybody else.
+PLAYER_MANAGEMENT_PHASES = frozenset({Phase.LOBBY, Phase.FACT_COLLECTION, Phase.READY})
+
 
 class GameError(Exception):
     """Raised for invalid, user-correctable game actions."""
@@ -151,6 +158,38 @@ def clamp_investigation_minutes(raw: Optional[int]) -> int:
     return minutes
 
 
+def can_remove_players(phase: str) -> bool:
+    """Whether the host may still remove a participant from the room."""
+    return phase in PLAYER_MANAGEMENT_PHASES
+
+
+def is_correct_guess(guess_id: Optional[str], owner_id: Optional[str]) -> bool:
+    """A guess is correct when it names the owner of the assigned fact."""
+    return bool(guess_id) and bool(owner_id) and guess_id == owner_id
+
+
+def points_for(correct: bool) -> int:
+    return POINTS_PER_CORRECT_GUESS if correct else 0
+
+
+def rank_scores(points: Dict[str, int]) -> Dict[str, int]:
+    """Rank players by score, 1 being best.
+
+    Ties share a place and the next place is skipped (1, 1, 3), so a tie never
+    looks like a win over the player below it.
+    """
+    ordered = sorted(points.items(), key=lambda item: (-item[1], item[0]))
+    ranks: Dict[str, int] = {}
+    previous_value: Optional[int] = None
+    previous_rank = 0
+    for position, (player_id, value) in enumerate(ordered, start=1):
+        rank = previous_rank if value == previous_value else position
+        ranks[player_id] = rank
+        previous_value = value
+        previous_rank = rank
+    return ranks
+
+
 __all__ = [
     "Phase",
     "ALL_PHASES",
@@ -161,6 +200,8 @@ __all__ = [
     "INVESTIGATION_DEFAULT_MINUTES",
     "MIN_PLAYERS",
     "MAX_PLAYERS",
+    "POINTS_PER_CORRECT_GUESS",
+    "PLAYER_MANAGEMENT_PHASES",
     "GameError",
     "generate_derangement",
     "validate_assignment",
@@ -170,4 +211,8 @@ __all__ = [
     "sanitize_fact",
     "sanitize_name",
     "clamp_investigation_minutes",
+    "can_remove_players",
+    "is_correct_guess",
+    "points_for",
+    "rank_scores",
 ]

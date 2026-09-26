@@ -12,6 +12,7 @@ to know when to re-fetch their rendered view.
 
 from __future__ import annotations
 
+import threading
 from typing import Optional, Protocol
 
 from . import config
@@ -27,28 +28,35 @@ class RoomStore(Protocol):
 
 
 _store: Optional[RoomStore] = None
+# The routes are sync, so FastAPI runs them in a threadpool: without this lock
+# two first requests can both build a store, and the Firebase backend would try
+# to initialize the admin app twice.
+_store_lock = threading.Lock()
 
 
 def get_store() -> RoomStore:
     """Return the process-wide store, chosen from configuration."""
     global _store
     if _store is None:
-        backend = config.settings.resolved_store_backend()
-        if backend == "firebase":
-            from .firebase_store import FirebaseStore
+        with _store_lock:
+            if _store is None:
+                backend = config.settings.resolved_store_backend()
+                if backend == "firebase":
+                    from .firebase_store import FirebaseStore
 
-            _store = FirebaseStore()
-        else:
-            from .memory_store import MemoryStore
+                    _store = FirebaseStore()
+                else:
+                    from .memory_store import MemoryStore
 
-            _store = MemoryStore()
+                    _store = MemoryStore()
     return _store
 
 
 def reset_store() -> None:
     """Test hook: forget the cached store so a new backend is built."""
     global _store
-    _store = None
+    with _store_lock:
+        _store = None
 
 
 __all__ = ["RoomStore", "get_store", "reset_store"]

@@ -10,7 +10,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from .game import FACT_MAX_LENGTH, Phase, generate_derangement
+from .game import FACT_MAX_LENGTH, GameError, Phase, generate_derangement
 from .security import generate_id, generate_token
 
 
@@ -113,11 +113,51 @@ class Room:
     def all_guessed(self) -> bool:
         return bool(self.players) and all(p.guessed for p in self.players.values())
 
+    def all_revealed(self) -> bool:
+        return bool(self.players) and all(pid in self.revealed_players for pid in self.players)
+
     def add_player(self, name: str) -> Player:
         player = Player(id=generate_id(), name=name, token=generate_token())
         self.players[player.id] = player
         self.tokens[player.token] = player.id
         return player
+
+    def remove_player(self, player_id: str) -> Player:
+        """Remove a participant and every trace of them from the room.
+
+        Their session token stops resolving, so a kicked player is bounced back
+        to the landing page on their next request.
+        """
+        player = self.players.pop(player_id, None)
+        if player is None:
+            raise GameError("Unknown participant.")
+        self.tokens.pop(player.token, None)
+        # Drop the kicked player from the assignment map on both sides, so the
+        # remaining mapping never points at somebody who is no longer here.
+        self.assignments.pop(player_id, None)
+        for giver_id, owner_id in list(self.assignments.items()):
+            if owner_id == player_id:
+                del self.assignments[giver_id]
+        if player_id in self.revealed_players:
+            self.revealed_players.remove(player_id)
+        return player
+
+    def restart_session(self) -> None:
+        """Empty the room back to a fresh lobby, keeping code and host token.
+
+        Used by the host to start over: every participant has to re-join.
+        """
+        self.players.clear()
+        self.tokens.clear()
+        self.assignments.clear()
+        self.revealed_players.clear()
+        self.investigation_started_at = None
+        self.investigation_ends_at = None
+        self.ended = False
+        self.state = Phase.LOBBY
+
+    def reveal_everyone(self) -> None:
+        self.revealed_players = list(self.players.keys())
 
     def create_derangement_map(self) -> Dict[str, str]:
         """Assign every player someone else's fact (see ``game.generate_derangement``)."""

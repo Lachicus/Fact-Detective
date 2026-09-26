@@ -1,0 +1,35 @@
+{# ----------------------------------------------------------------- #}
+{# RESULTS BOARD — who guessed right/wrong, the score and the      #}
+{# answer key. Only rendered when `results` is present, which the  #}
+{# view layer gates on every reveal having been shown.             #}
+{# ----------------------------------------------------------------- #}
+<section class="card wide">
+  <h3>Results</h3>
+  <p class="muted">Who guessed right, who didn't, and the final score.</p>
+  <table class="assignments results-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Detective</th>
+        <th></th>
+        <th>Guessed</th>
+        <th>Fact owner</th>
+        <th>Fact</th>
+        <th class="score-col">Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in results %}
+        <tr class="{{ 'row-correct' if row.correct else 'row-incorrect' }}">
+          <td class="rank-cell">{{ row.rank }}</td>
+          <td>{{ row.player_name }}{% if viewer_id and row.player_id == viewer_id %} <span class="tag done">you</span>{% endif %}</td>
+          <td class="verdict-cell {{ 'correct' if row.correct else 'incorrect' }}">{{ "✓" if row.correct else "✗" }}</td>
+          <td>{{ row.guess_name or "—" }}</td>
+          <td>{{ row.owner_name or "—" }}</td>
+          <td class="fact-cell">{{ row.fact or "" }}</td>
+          <td class="score-cell">{{ row.points }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
